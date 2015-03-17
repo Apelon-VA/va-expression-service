@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-compile and run</actionName>
+            <displayName>compile and run</displayName>
+            <goals>
+                <goal>install</goal>
+                <goal>exec:java</goal>
+            </goals>
+        </action>
+    </actions>
