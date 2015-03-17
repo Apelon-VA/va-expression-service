@@ -10,18 +10,18 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
-        <ochre.version>2.15</ochre.version>
+        <ochre.version>2.16</ochre.version>
         <snorocket-core.version>2.5.7</snorocket-core.version>
-        <newtons-cradle.version>1.6-SNAPSHOT</newtons-cradle.version>
-        <isaac-metadata.version>1.17</isaac-metadata.version>
-        <query.version>2.0-SNAPSHOT</query.version>
-        <logic.version>1.2-SNAPSHOT</logic.version>
+        <newtons-cradle.version>1.6</newtons-cradle.version>
+        <isaac-metadata.version>1.18</isaac-metadata.version>
+        <query.version>2.0</query.version>
+        <logic.version>1.2</logic.version>
     </properties>
     <dependencies>
         <dependency>
             <groupId>gov.vha.solor</groupId>
             <artifactId>snomed</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
             <type>lucene.zip</type>
             <classifier>all</classifier>
             <scope>compile</scope>
@@ -29,7 +29,7 @@
         <dependency>
             <groupId>gov.vha.solor</groupId>
             <artifactId>snomed</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.0</version>
             <type>cradle.zip</type>
             <classifier>all</classifier>
             <scope>compile</scope>
