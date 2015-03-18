@@ -19,7 +19,6 @@ import gov.vha.isaac.lookup.constants.Constants;
 import gov.vha.isaac.metadata.coordinates.ViewCoordinates;
 import gov.vha.isaac.ochre.api.LookupService;
 import gov.vha.isaac.ochre.api.TaxonomyProvider;
-import gov.vha.isaac.ochre.api.coordinate.TaxonomyCoordinate;
 import gov.vha.isaac.ochre.collections.SequenceSet;
 import java.io.IOException;
 import java.util.List;
@@ -31,7 +30,6 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidT3Generator;
-import org.ihtsdo.otf.tcc.model.cc.termstore.TerminologySnapshot;
 import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 
@@ -40,7 +38,10 @@ import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
  * @author kec
  */
 public class Main {
-    public static void main(String [] args) {
+    public static void main(String[] args) {
+        if (args == null || args.length == 0) {
+            args = new String[]{"target"};
+        }
         System.out.println("Hello world");
         System.out.println("Build directory: " + args[0]);
         System.setProperty(Constants.CHRONICLE_COLLECTIONS_ROOT_LOCATION_PROPERTY, args[0] + "/data/object-chronicles");
