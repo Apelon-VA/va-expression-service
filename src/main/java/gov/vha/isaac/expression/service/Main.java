@@ -18,7 +18,7 @@ package gov.vha.isaac.expression.service;
 import gov.vha.isaac.lookup.constants.Constants;
 import gov.vha.isaac.metadata.coordinates.ViewCoordinates;
 import gov.vha.isaac.ochre.api.LookupService;
-import gov.vha.isaac.ochre.api.TaxonomyProvider;
+import gov.vha.isaac.ochre.api.TaxonomyService;
 import gov.vha.isaac.ochre.collections.SequenceSet;
 import java.io.IOException;
 import java.util.List;
@@ -51,7 +51,7 @@ public class Main {
         System.out.println("System up...");
         
         IndexerBI snomedIdLookup = LookupService.get().getService(IndexerBI.class, "snomed id refex indexer");
-        TaxonomyProvider taxonomy = LookupService.getService(TaxonomyProvider.class);
+        TaxonomyService taxonomy = LookupService.getService(TaxonomyService.class);
         TerminologyStoreDI termStore = LookupService.getService(TerminologyStoreDI.class);
         try {
             TerminologySnapshotDI termSnapshot = termStore.getSnapshot(ViewCoordinates.getDevelopmentInferredLatest());
