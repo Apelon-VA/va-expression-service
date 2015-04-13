@@ -10,13 +10,13 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <properties>
-        <ochre.version>2.17</ochre.version>
+        <ochre.version>2.23</ochre.version>
         <snorocket-core.version>2.5.7</snorocket-core.version>
-        <newtons-cradle.version>1.7</newtons-cradle.version>
-        <isaac-metadata.version>1.19</isaac-metadata.version>
-        <query.version>2.3</query.version>
-        <logic.version>1.3</logic.version>
-        <solor.version>1.1</solor.version>
+        <newtons-cradle.version>1.13</newtons-cradle.version>
+        <isaac-metadata.version>1.23</isaac-metadata.version>
+        <query.version>2.8</query.version>
+        <logic.version>1.8</logic.version>
+        <solor.version>1.4</solor.version>
     </properties>
     <dependencies>
         <dependency>
