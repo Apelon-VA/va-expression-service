@@ -15,18 +15,27 @@
  */
 package gov.vha.isaac.expression.service;
 
+import gov.vha.isaac.logic.LogicGraph;
+import gov.vha.isaac.logic.LogicService;
 import gov.vha.isaac.lookup.constants.Constants;
+import gov.vha.isaac.metadata.coordinates.EditCoordinates;
+import gov.vha.isaac.metadata.coordinates.LogicCoordinates;
+import gov.vha.isaac.metadata.coordinates.StampCoordinates;
 import gov.vha.isaac.metadata.coordinates.ViewCoordinates;
+import gov.vha.isaac.ochre.api.IdentifierService;
 import gov.vha.isaac.ochre.api.LookupService;
 import gov.vha.isaac.ochre.api.TaxonomyService;
+import gov.vha.isaac.ochre.api.chronicle.LatestVersion;
+import gov.vha.isaac.ochre.api.memory.HeapUseTicker;
+import gov.vha.isaac.ochre.api.progress.ActiveTasksTicker;
 import gov.vha.isaac.ochre.collections.SequenceSet;
-import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
-import org.ihtsdo.otf.tcc.api.concept.ConceptVersionBI;
+import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidT3Generator;
@@ -38,10 +47,13 @@ import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
  * @author kec
  */
 public class Main {
+
     public static void main(String[] args) {
         if (args == null || args.length == 0) {
             args = new String[]{"target"};
         }
+        HeapUseTicker.start(10);
+        ActiveTasksTicker.start(10);
         System.out.println("Hello world");
         System.out.println("Build directory: " + args[0]);
         System.setProperty(Constants.CHRONICLE_COLLECTIONS_ROOT_LOCATION_PROPERTY, args[0] + "/data/object-chronicles");
@@ -49,33 +61,75 @@ public class Main {
 
         LookupService.getRunLevelController().proceedTo(2);
         System.out.println("System up...");
-        
+
+        IdentifierService idService = LookupService.getService(IdentifierService.class);
         IndexerBI snomedIdLookup = LookupService.get().getService(IndexerBI.class, "snomed id refex indexer");
+        IndexerBI descriptionLookup = LookupService.get().getService(IndexerBI.class, "Description indexer");
         TaxonomyService taxonomy = LookupService.getService(TaxonomyService.class);
         TerminologyStoreDI termStore = LookupService.getService(TerminologyStoreDI.class);
         try {
             TerminologySnapshotDI termSnapshot = termStore.getSnapshot(ViewCoordinates.getDevelopmentInferredLatest());
-            
+
             UUID bleedingSnomedUuid = UuidT3Generator.fromSNOMED(131148009L);
-            
-            ConceptVersionBI bleedingConcept1 = termSnapshot.getConceptVersion(bleedingSnomedUuid);
+
+            ConceptChronicleBI bleedingConcept1 = termStore.getConcept(bleedingSnomedUuid);
+            System.out.println("\nFound [1] nid: " + bleedingConcept1.getNid());
+            System.out.println("Found [1] concept sequence: " + idService.getConceptSequence(bleedingConcept1.getNid()));
             System.out.println("Found [1]: " + bleedingConcept1);
-            SequenceSet kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), ViewCoordinates.getDevelopmentInferredLatest());
-            System.out.println("Has " + kindOfBleedingSequences.size() + " kinds.");
-            
-            List<SearchResult> bleedingSctidResult = snomedIdLookup.query("131148009", ComponentProperty.LONG_EXTENSION_1, 1);
+
+            List<SearchResult> bleedingSctidResult = snomedIdLookup.query("131148009", ComponentProperty.STRING_EXTENSION_1, 1);
             // Sorry, refex search still needs some work. 
             if (!bleedingSctidResult.isEmpty()) {
-                int bleedingNid = bleedingSctidResult.get(0).nid;
-                ConceptVersionBI bleedingConcept2 = termSnapshot.getConceptVersion(bleedingNid);
-                System.out.println("Found [2]: " + bleedingConcept2);
+                for (SearchResult result : bleedingSctidResult) {
+                    int bleedingConceptNid = result.nid;
+                    System.out.println("\nFound [2] nid: " + bleedingConceptNid);
+                    ConceptChronicleBI bleedingConcept2 = termStore.getConcept(bleedingConceptNid);
+                    System.out.println("Found [2]: " + bleedingConcept2);
+                }
             }
-            
-            
-        } catch (IOException ex) {
+
+            List<SearchResult> bleedingDescriptionResult = descriptionLookup.query("bleeding", ComponentProperty.DESCRIPTION_TEXT, 1);
+            if (!bleedingDescriptionResult.isEmpty()) {
+                for (SearchResult result : bleedingDescriptionResult) {
+                    int bleedingDexcriptionNid = result.nid;
+                    int bleedingConceptNid = termSnapshot.getConceptNidForNid(bleedingDexcriptionNid);
+                    System.out.println("\nFound [3] nid: " + bleedingConceptNid);
+                    System.out.println("Found [3] cNid: " + termStore.getConceptNidForNid(bleedingConceptNid));
+                    ConceptChronicleBI bleedingConcept2 = termStore.getConcept(bleedingConceptNid);
+                    System.out.println("Found [3]: " + bleedingConcept2);
+                }
+            }
+
+            SequenceSet kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), ViewCoordinates.getDevelopmentInferredLatest());
+            System.out.println("\nHas " + kindOfBleedingSequences.size() + " kinds.");
+
+            LogicService logicService = LookupService.getService(LogicService.class);
+
+            logicService.fullClassification(
+                    StampCoordinates.getDevelopmentLatest(),
+                    LogicCoordinates.getStandardElProfile(),
+                    EditCoordinates.getDefaultUserSolorOverlay());
+
+            Optional<LatestVersion<LogicGraph>> bleedingGraph = logicService.getLogicGraph(bleedingConcept1.getNid(),
+                    LogicCoordinates.getStandardElProfile().getStatedAssemblageSequence(),
+                    StampCoordinates.getDevelopmentLatest());
+
+            if (bleedingGraph.isPresent()) {
+                int sequence = logicService.getConceptSequenceForExpression(bleedingGraph.get().value(),
+                        StampCoordinates.getDevelopmentLatest(),
+                        LogicCoordinates.getStandardElProfile(),
+                        EditCoordinates.getDefaultUserSolorOverlay());
+                System.out.println("Found concept sequence "+ sequence + " for graph: " + bleedingGraph.get().value());
+            } else {
+                System.out.println("Found concept sequence for graph: " + bleedingGraph.get().value());
+            }
+
+        } catch (Throwable ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
+        HeapUseTicker.stop();
+        ActiveTasksTicker.stop();
         LookupService.getRunLevelController().proceedTo(-1);
         System.out.println("System down...");
         System.exit(0);
