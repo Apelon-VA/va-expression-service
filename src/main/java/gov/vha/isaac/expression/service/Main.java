@@ -67,6 +67,8 @@ public class Main {
         IndexerBI descriptionLookup = LookupService.get().getService(IndexerBI.class, "Description indexer");
         TaxonomyService taxonomy = LookupService.getService(TaxonomyService.class);
         TerminologyStoreDI termStore = LookupService.getService(TerminologyStoreDI.class);
+        LogicService logicService = LookupService.getService(LogicService.class);
+
         try {
             TerminologySnapshotDI termSnapshot = termStore.getSnapshot(ViewCoordinates.getDevelopmentInferredLatest());
 
@@ -77,8 +79,8 @@ public class Main {
             System.out.println("Found [1] concept sequence: " + idService.getConceptSequence(bleedingConcept1.getNid()));
             System.out.println("Found [1]: " + bleedingConcept1);
 
-            List<SearchResult> bleedingSctidResult = snomedIdLookup.query("131148009", ComponentProperty.STRING_EXTENSION_1, 1);
-            // Sorry, refex search still needs some work. 
+            List<SearchResult> bleedingSctidResult = snomedIdLookup.query("131148009", ComponentProperty.STRING_EXTENSION_1, 25);
+
             if (!bleedingSctidResult.isEmpty()) {
                 for (SearchResult result : bleedingSctidResult) {
                     int bleedingConceptNid = result.nid;
@@ -88,28 +90,16 @@ public class Main {
                 }
             }
 
-            List<SearchResult> bleedingDescriptionResult = descriptionLookup.query("bleeding", ComponentProperty.DESCRIPTION_TEXT, 1);
+            List<SearchResult> bleedingDescriptionResult = descriptionLookup.query("bleeding", ComponentProperty.DESCRIPTION_TEXT, 25);
             if (!bleedingDescriptionResult.isEmpty()) {
                 for (SearchResult result : bleedingDescriptionResult) {
                     int bleedingDexcriptionNid = result.nid;
                     int bleedingConceptNid = termSnapshot.getConceptNidForNid(bleedingDexcriptionNid);
-                    System.out.println("\nFound [3] nid: " + bleedingConceptNid);
-                    System.out.println("Found [3] cNid: " + termStore.getConceptNidForNid(bleedingConceptNid));
                     ConceptChronicleBI bleedingConcept2 = termStore.getConcept(bleedingConceptNid);
-                    System.out.println("Found [3]: " + bleedingConcept2);
+                    System.out.println("\nFound [3] nid: " + bleedingDexcriptionNid + " cNid: " + bleedingConceptNid + 
+                            "; " + bleedingConcept2);
                 }
             }
-
-            SequenceSet kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), ViewCoordinates.getDevelopmentInferredLatest());
-            System.out.println("\nHas " + kindOfBleedingSequences.size() + " kinds.");
-
-            LogicService logicService = LookupService.getService(LogicService.class);
-
-            logicService.fullClassification(
-                    StampCoordinates.getDevelopmentLatest(),
-                    LogicCoordinates.getStandardElProfile(),
-                    EditCoordinates.getDefaultUserSolorOverlay());
-
             Optional<LatestVersion<LogicGraph>> bleedingGraph = logicService.getLogicGraph(bleedingConcept1.getNid(),
                     LogicCoordinates.getStandardElProfile().getStatedAssemblageSequence(),
                     StampCoordinates.getDevelopmentLatest());
@@ -123,6 +113,18 @@ public class Main {
             } else {
                 System.out.println("Found concept sequence for graph: " + bleedingGraph.get().value());
             }
+            
+            
+            SequenceSet kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), ViewCoordinates.getDevelopmentInferredLatest());
+            System.out.println("\nHas " + kindOfBleedingSequences.size() + " kinds.");
+
+
+            logicService.fullClassification(
+                    StampCoordinates.getDevelopmentLatest(),
+                    LogicCoordinates.getStandardElProfile(),
+                    EditCoordinates.getDefaultUserSolorOverlay());
+
+
 
         } catch (Throwable ex) {
             Logger.getLogger(Main.class.getName()).log(Level.SEVERE, null, ex);
