@@ -39,6 +39,7 @@ import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidT3Generator;
+import org.ihtsdo.otf.tcc.model.cc.concept.ConceptVersion;
 import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 
@@ -52,15 +53,14 @@ public class Main {
         if (args == null || args.length == 0) {
             args = new String[]{"target"};
         }
-        HeapUseTicker.start(10);
-        ActiveTasksTicker.start(10);
-        System.out.println("Hello world");
         System.out.println("Build directory: " + args[0]);
         System.setProperty(Constants.DATA_STORE_ROOT_LOCATION_PROPERTY, args[0] + "/data/");
         //System.setProperty(Constants.CHRONICLE_COLLECTIONS_ROOT_LOCATION_PROPERTY, args[0] + "/data/object-chronicles");
         //System.setProperty(Constants.SEARCH_ROOT_LOCATION_PROPERTY, args[0] + "/data/search");
+        LookupService.startupIsaac();
+        HeapUseTicker.start(10);
+        ActiveTasksTicker.start(10);
 
-        LookupService.getRunLevelController().proceedTo(2);
         System.out.println("System up...");
 
         IdentifierService idService = LookupService.getService(IdentifierService.class);
@@ -71,16 +71,22 @@ public class Main {
         LogicService logicService = LookupService.getService(LogicService.class);
 
         try {
-            TerminologySnapshotDI termSnapshot = termStore.getSnapshot(ViewCoordinates.getDevelopmentInferredLatest());
+            TerminologySnapshotDI statedTermSnapshot = termStore.getSnapshot(ViewCoordinates.getDevelopmentStatedLatest());
+            TerminologySnapshotDI inferredTermSnapshot = termStore.getSnapshot(ViewCoordinates.getDevelopmentInferredLatest());
 
             UUID bleedingSnomedUuid = UuidT3Generator.fromSNOMED(131148009L);
 
             ConceptChronicleBI bleedingConcept1 = termStore.getConcept(bleedingSnomedUuid);
             System.out.println("\nFound [1] nid: " + bleedingConcept1.getNid());
             System.out.println("Found [1] concept sequence: " + idService.getConceptSequence(bleedingConcept1.getNid()));
-            System.out.println("Found [1]: " + bleedingConcept1);
+            System.out.println("Found [1]: " + bleedingConcept1 + "\n " + bleedingConcept1.toLongString());
+            
+            LogicGraph lg1 = logicService.createLogicGraph((ConceptVersion) statedTermSnapshot.getConceptVersion(bleedingConcept1.getConceptNid()));
+            System.out.println("Stated logic graph:  " + lg1);
+            LogicGraph lg2 = logicService.createLogicGraph((ConceptVersion) inferredTermSnapshot.getConceptVersion(bleedingConcept1.getConceptNid()));
+            System.out.println("Inferred logic graph:  " + lg2);
 
-            List<SearchResult> bleedingSctidResult = snomedIdLookup.query("131148009", ComponentProperty.STRING_EXTENSION_1, 25);
+            List<SearchResult> bleedingSctidResult = snomedIdLookup.query("131148009", ComponentProperty.STRING_EXTENSION_1, 5);
 
             if (!bleedingSctidResult.isEmpty()) {
                 for (SearchResult result : bleedingSctidResult) {
@@ -91,11 +97,11 @@ public class Main {
                 }
             }
 
-            List<SearchResult> bleedingDescriptionResult = descriptionLookup.query("bleeding", ComponentProperty.DESCRIPTION_TEXT, 25);
+            List<SearchResult> bleedingDescriptionResult = descriptionLookup.query("bleeding", ComponentProperty.DESCRIPTION_TEXT, 5);
             if (!bleedingDescriptionResult.isEmpty()) {
                 for (SearchResult result : bleedingDescriptionResult) {
                     int bleedingDexcriptionNid = result.nid;
-                    int bleedingConceptNid = termSnapshot.getConceptNidForNid(bleedingDexcriptionNid);
+                    int bleedingConceptNid = statedTermSnapshot.getConceptNidForNid(bleedingDexcriptionNid);
                     ConceptChronicleBI bleedingConcept2 = termStore.getConcept(bleedingConceptNid);
                     System.out.println("\nFound [3] nid: " + bleedingDexcriptionNid + " cNid: " + bleedingConceptNid + 
                             "; " + bleedingConcept2);
@@ -133,7 +139,7 @@ public class Main {
 
         HeapUseTicker.stop();
         ActiveTasksTicker.stop();
-        LookupService.getRunLevelController().proceedTo(-1);
+        LookupService.shutdownIsaac();
         System.out.println("System down...");
         System.exit(0);
     }
