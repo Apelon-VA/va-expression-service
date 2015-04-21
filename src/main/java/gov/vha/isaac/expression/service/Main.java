@@ -17,7 +17,6 @@ package gov.vha.isaac.expression.service;
 
 import gov.vha.isaac.logic.LogicGraph;
 import gov.vha.isaac.logic.LogicService;
-import gov.vha.isaac.lookup.constants.Constants;
 import gov.vha.isaac.metadata.coordinates.EditCoordinates;
 import gov.vha.isaac.metadata.coordinates.LogicCoordinates;
 import gov.vha.isaac.metadata.coordinates.StampCoordinates;
@@ -26,6 +25,7 @@ import gov.vha.isaac.ochre.api.IdentifierService;
 import gov.vha.isaac.ochre.api.LookupService;
 import gov.vha.isaac.ochre.api.TaxonomyService;
 import gov.vha.isaac.ochre.api.chronicle.LatestVersion;
+import gov.vha.isaac.ochre.api.constants.Constants;
 import gov.vha.isaac.ochre.api.memory.HeapUseTicker;
 import gov.vha.isaac.ochre.api.progress.ActiveTasksTicker;
 import gov.vha.isaac.ochre.collections.SequenceSet;
@@ -56,8 +56,9 @@ public class Main {
         ActiveTasksTicker.start(10);
         System.out.println("Hello world");
         System.out.println("Build directory: " + args[0]);
-        System.setProperty(Constants.CHRONICLE_COLLECTIONS_ROOT_LOCATION_PROPERTY, args[0] + "/data/object-chronicles");
-        System.setProperty(Constants.SEARCH_ROOT_LOCATION_PROPERTY, args[0] + "/data/search");
+        System.setProperty(Constants.DATA_STORE_ROOT_LOCATION_PROPERTY, args[0] + "/data/");
+        //System.setProperty(Constants.CHRONICLE_COLLECTIONS_ROOT_LOCATION_PROPERTY, args[0] + "/data/object-chronicles");
+        //System.setProperty(Constants.SEARCH_ROOT_LOCATION_PROPERTY, args[0] + "/data/search");
 
         LookupService.getRunLevelController().proceedTo(2);
         System.out.println("System up...");
