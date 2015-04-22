@@ -4,18 +4,18 @@
     <parent>
         <groupId>gov.vha.isaac</groupId>
         <artifactId>isaac-parent</artifactId>
-        <version>1.4</version>
+        <version>1.5</version>
     </parent>
 
     <artifactId>expression-service</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
     <packaging>jar</packaging>
     
     <properties>
-        <newtons-cradle.version>1.15</newtons-cradle.version>
-        <query.version>2.10</query.version>
-        <logic.version>1.10</logic.version>
-        <solor.version>1.6</solor.version>
+        <newtons-cradle.version>1.16</newtons-cradle.version>
+        <query.version>2.11</query.version>
+        <logic.version>1.11</logic.version>
+        <solor.version>1.7</solor.version>
     </properties>
     
     <dependencies>
@@ -49,6 +49,11 @@
             <groupId>gov.vha.isaac.logic.modules</groupId>
             <artifactId>logic</artifactId>
             <version>${logic.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>${slf4j.version}</version>
         </dependency>
     </dependencies>
     <build>
