@@ -90,7 +90,7 @@
                 <configuration>
                     <mainClass>gov.vha.isaac.expression.service.Main</mainClass>
                     <arguments>
-                        <argument>${project.build.directory}</argument>
+                        <argument>${project.build.directory}/data/snomed-${solor.version}-all.data</argument>
                     </arguments>
                 </configuration>
             </plugin>

@@ -54,9 +54,9 @@ public class Main {
             args = new String[]{"target"};
         }
         System.out.println("Build directory: " + args[0]);
-        System.setProperty(Constants.DATA_STORE_ROOT_LOCATION_PROPERTY, args[0] + "/data/");
-        //System.setProperty(Constants.CHRONICLE_COLLECTIONS_ROOT_LOCATION_PROPERTY, args[0] + "/data/object-chronicles");
-        //System.setProperty(Constants.SEARCH_ROOT_LOCATION_PROPERTY, args[0] + "/data/search");
+        System.setProperty(Constants.DATA_STORE_ROOT_LOCATION_PROPERTY, args[0]);
+        //System.setProperty(Constants.CHRONICLE_COLLECTIONS_ROOT_LOCATION_PROPERTY, args[0] + "/object-chronicles");
+        //System.setProperty(Constants.SEARCH_ROOT_LOCATION_PROPERTY, args[0] + "/search");
         LookupService.startupIsaac();
         HeapUseTicker.start(10);
         ActiveTasksTicker.start(10);
