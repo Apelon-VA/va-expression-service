@@ -26,8 +26,13 @@ import gov.vha.isaac.ochre.api.LookupService;
 import gov.vha.isaac.ochre.api.TaxonomyService;
 import gov.vha.isaac.ochre.api.chronicle.LatestVersion;
 import gov.vha.isaac.ochre.api.constants.Constants;
+import gov.vha.isaac.ochre.api.logic.LogicalExpression;
+import gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder;
+import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.*;
+import gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilderService;
 import gov.vha.isaac.ochre.api.memory.HeapUseTicker;
 import gov.vha.isaac.ochre.api.progress.ActiveTasksTicker;
+import gov.vha.isaac.ochre.collections.ConceptSequenceSet;
 import gov.vha.isaac.ochre.collections.SequenceSet;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +41,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
+import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidT3Generator;
@@ -120,16 +126,41 @@ public class Main {
             } else {
                 System.out.println("Found concept sequence for graph: " + bleedingGraph.get().value());
             }
-            
-            
-            SequenceSet kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), ViewCoordinates.getDevelopmentInferredLatest());
-            System.out.println("\nHas " + kindOfBleedingSequences.size() + " kinds.");
-
-
             logicService.fullClassification(
                     StampCoordinates.getDevelopmentLatest(),
                     LogicCoordinates.getStandardElProfile(),
                     EditCoordinates.getDefaultUserSolorOverlay());
+
+        LogicalExpressionBuilderService expressionBuilderService = LookupService.getService(LogicalExpressionBuilderService.class);
+        LogicalExpressionBuilder defBuilder = expressionBuilderService.getLogicalExpressionBuilder();
+        
+        SufficientSet(And(ConceptAssertion(Snomed.BLEEDING_FINDING, defBuilder),
+                          SomeRole(Snomed.FINDING_SITE, ConceptAssertion(Snomed.ABDOMINAL_WALL_STRUCTURE, defBuilder))));
+        
+        LogicalExpression abdominalWallBleedingDef = defBuilder.build();
+
+        System.out.println("Created definition:\n\n " + abdominalWallBleedingDef);
+        
+        int newSequence = logicService.getConceptSequenceForExpression((LogicGraph) abdominalWallBleedingDef,
+                        StampCoordinates.getDevelopmentLatest(),
+                        LogicCoordinates.getStandardElProfile(),
+                        EditCoordinates.getDefaultUserSolorOverlay());
+        
+        ConceptSequenceSet newConcepts = ConceptSequenceSet.of(newSequence);
+        logicService.incrementalClassification(StampCoordinates.getDevelopmentLatest(),
+                    LogicCoordinates.getStandardElProfile(),
+                    EditCoordinates.getDefaultUserSolorOverlay(), newConcepts);
+            
+            
+        SequenceSet kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), ViewCoordinates.getDevelopmentInferredLatest());
+        System.out.println("\nHas " + kindOfBleedingSequences.size() + " kinds.");
+        
+        if (kindOfBleedingSequences.contains(newSequence)) {
+            System.out.println("Kind-of set includes new concept " + newSequence);
+        } else {
+            System.out.println("Error: kind-of set does not include new concept " + newSequence);
+        }
+
 
 
 
