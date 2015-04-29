@@ -15,12 +15,17 @@
  */
 package gov.vha.isaac.expression.service;
 
+import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.And;
+import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.ConceptAssertion;
+import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.SomeRole;
+import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.SufficientSet;
 import gov.vha.isaac.logic.LogicGraph;
 import gov.vha.isaac.logic.LogicService;
 import gov.vha.isaac.metadata.coordinates.EditCoordinates;
 import gov.vha.isaac.metadata.coordinates.LogicCoordinates;
 import gov.vha.isaac.metadata.coordinates.StampCoordinates;
 import gov.vha.isaac.metadata.coordinates.ViewCoordinates;
+import gov.vha.isaac.metadata.source.IsaacMetadataAuxiliaryBinding;
 import gov.vha.isaac.ochre.api.IdentifierService;
 import gov.vha.isaac.ochre.api.LookupService;
 import gov.vha.isaac.ochre.api.TaxonomyService;
@@ -28,24 +33,27 @@ import gov.vha.isaac.ochre.api.chronicle.LatestVersion;
 import gov.vha.isaac.ochre.api.constants.Constants;
 import gov.vha.isaac.ochre.api.logic.LogicalExpression;
 import gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder;
-import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.*;
 import gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilderService;
 import gov.vha.isaac.ochre.api.memory.HeapUseTicker;
 import gov.vha.isaac.ochre.api.progress.ActiveTasksTicker;
 import gov.vha.isaac.ochre.collections.ConceptSequenceSet;
 import gov.vha.isaac.ochre.collections.SequenceSet;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.concept.ConceptChronicleBI;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
+import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.api.uuid.UuidT3Generator;
 import org.ihtsdo.otf.tcc.model.cc.concept.ConceptVersion;
+import org.ihtsdo.otf.tcc.model.cc.termstore.PersistentStoreI;
 import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
 import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 
@@ -161,6 +169,21 @@ public class Main {
             System.out.println("Error: kind-of set does not include new concept " + newSequence);
         }
 
+        
+        System.out.println("Test rels from root");
+        StringBuilder sb = new StringBuilder();
+        ConceptChronicleBI root = LookupService.get().getService(PersistentStoreI.class).getConcept(IsaacMetadataAuxiliaryBinding.ISAAC_ROOT.getNid());
+        Collection<? extends RelationshipChronicleBI> incomingRels = root.getRelationshipsIncoming();
+        AtomicInteger relCount = new AtomicInteger(1);
+        if (incomingRels.isEmpty()) {
+            System.out.println(" No incoming rels for: " + root);
+        } else {
+            System.out.println(" Found " + incomingRels.size() + " incoming rels for: " + root);
+            incomingRels.forEach((rel) -> {
+                sb.append(relCount.getAndIncrement()).append(": ").append(rel).append("\n");});
+            
+        }
+        System.out.println(sb.toString());
 
 
 
