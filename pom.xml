@@ -4,18 +4,22 @@
     <parent>
         <groupId>gov.vha.isaac</groupId>
         <artifactId>isaac-parent</artifactId>
-        <version>1.5</version>
+        <version>1.6</version>
     </parent>
 
     <artifactId>expression-service</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
     <packaging>jar</packaging>
     
+    <scm>
+        <url>https://github.com/Apelon-VA/va-expression-service.git</url>
+    </scm>
+    
     <properties>
-        <newtons-cradle.version>1.16</newtons-cradle.version>
-        <query.version>2.11</query.version>
-        <logic.version>1.11</logic.version>
-        <solor.version>1.7</solor.version>
+        <newtons-cradle.version>1.17</newtons-cradle.version>
+        <query.version>2.12</query.version>
+        <logic.version>1.12</logic.version>
+        <solor.version>1.8</solor.version>
     </properties>
     
     <dependencies>
@@ -50,10 +54,21 @@
             <artifactId>logic</artifactId>
             <version>${logic.version}</version>
         </dependency>
+        <!-- Need to override the scope on these 3 logging packages -->
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>${slf4j.version}</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-jul</artifactId>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
     <build>
@@ -90,7 +105,7 @@
                 <configuration>
                     <mainClass>gov.vha.isaac.expression.service.Main</mainClass>
                     <arguments>
-                        <argument>${project.build.directory}</argument>
+                        <argument>${project.build.directory}/data/snomed-${solor.version}-all.data</argument>
                     </arguments>
                 </configuration>
             </plugin>

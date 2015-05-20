@@ -7,6 +7,9 @@
                 <goal>install</goal>
                 <goal>exec:java</goal>
             </goals>
+            <properties>
+                <exec.args>-Xmx6g -Xms6g</exec.args>
+            </properties>
         </action>
         <action>
             <actionName>run</actionName>
@@ -80,6 +83,34 @@
                 <exec.executable>java</exec.executable>
                 <exec.classpathScope>${classPathScope}</exec.classpathScope>
                 <jpda.listen>true</jpda.listen>
+            </properties>
+        </action>
+        <action>
+            <actionName>rebuild</actionName>
+            <packagings>
+                <packaging>*</packaging>
+            </packagings>
+            <goals>
+                <goal>clean</goal>
+                <goal>install</goal>
+            </goals>
+            <properties>
+                <Env.MAVEN_OPTS>-Xmx6g -Xms6g</Env.MAVEN_OPTS>
+                
+            </properties>
+        </action>
+        <action>
+            <actionName>build-with-dependencies</actionName>
+            <reactor>also-make</reactor>
+            <packagings>
+                <packaging>*</packaging>
+            </packagings>
+            <goals>
+                <goal>install</goal>
+            </goals>
+            <properties>
+                <Env.MAVEN_OPTS>-Xmx6g -Xms6g</Env.MAVEN_OPTS>
+                
             </properties>
         </action>
     </actions>
