@@ -257,8 +257,8 @@ public class Main {
 				System.out.println("Committing...");
 				Ts.get().commit();
 
-				System.out.println("Constructed concept " + newCon.getVersion(vc));
-				System.out.println("Constructed concept " + newCon.getVersion(vc).toLongString());
+				System.out.println("Constructed concept " + newCon.getVersion(vc).get());
+				System.out.println("Constructed concept " + newCon.getVersion(vc).get().toLongString());
 
 				System.out.println("Displaying concept description refexes");
 				for (DescriptionChronicleBI desc : newCon.getDescriptions()) {
