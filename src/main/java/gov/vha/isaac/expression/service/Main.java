@@ -26,11 +26,15 @@ import gov.vha.isaac.metadata.coordinates.LogicCoordinates;
 import gov.vha.isaac.metadata.coordinates.StampCoordinates;
 import gov.vha.isaac.metadata.coordinates.ViewCoordinates;
 import gov.vha.isaac.metadata.source.IsaacMetadataAuxiliaryBinding;
+import gov.vha.isaac.ochre.api.ConceptModel;
+import gov.vha.isaac.ochre.api.ConfigurationService;
 import gov.vha.isaac.ochre.api.IdentifierService;
 import gov.vha.isaac.ochre.api.LookupService;
 import gov.vha.isaac.ochre.api.TaxonomyService;
 import gov.vha.isaac.ochre.api.chronicle.LatestVersion;
+import gov.vha.isaac.ochre.api.component.concept.ConceptServiceManagerI;
 import gov.vha.isaac.ochre.api.constants.Constants;
+import gov.vha.isaac.ochre.api.index.SearchResult;
 import gov.vha.isaac.ochre.api.logic.LogicalExpression;
 import gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder;
 import gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilderService;
@@ -38,7 +42,8 @@ import gov.vha.isaac.ochre.api.memory.HeapUseTicker;
 import gov.vha.isaac.ochre.api.progress.ActiveTasksTicker;
 import gov.vha.isaac.ochre.collections.ConceptSequenceSet;
 import gov.vha.isaac.ochre.collections.SequenceSet;
-
+import gov.vha.isaac.ochre.model.logic.LogicExpressionOchreImpl;
+import gov.vha.isaac.ochre.util.UuidT3Generator;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +51,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
@@ -67,11 +71,9 @@ import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.api.store.Ts;
-import org.ihtsdo.otf.tcc.api.uuid.UuidT3Generator;
 import org.ihtsdo.otf.tcc.model.cc.concept.ConceptVersion;
 import org.ihtsdo.otf.tcc.model.cc.termstore.PersistentStoreI;
 import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
-import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 
 /**
  *
@@ -85,6 +87,7 @@ public class Main {
 		}
 		System.out.println("Build directory: " + args[0]);
 		System.setProperty(Constants.DATA_STORE_ROOT_LOCATION_PROPERTY, args[0]);
+		LookupService.getService(ConfigurationService.class).setConceptModel(ConceptModel.OTF_CONCEPT_MODEL);
 		//System.setProperty(Constants.CHRONICLE_COLLECTIONS_ROOT_LOCATION_PROPERTY, args[0] + "/object-chronicles");
 		//System.setProperty(Constants.SEARCH_ROOT_LOCATION_PROPERTY, args[0] + "/search");
 		LookupService.startupIsaac();
@@ -137,7 +140,7 @@ public class Main {
 							"; " + bleedingConcept2);
 				}
 			}
-			Optional<LatestVersion<LogicGraph>> bleedingGraph = logicService.getLogicGraph(bleedingConcept1.getNid(),
+			Optional<LatestVersion<LogicExpressionOchreImpl>> bleedingGraph = logicService.getLogicGraph(bleedingConcept1.getNid(),
 					LogicCoordinates.getStandardElProfile().getStatedAssemblageSequence(),
 					StampCoordinates.getDevelopmentLatest());
 
@@ -158,8 +161,9 @@ public class Main {
 			LogicalExpressionBuilderService expressionBuilderService = LookupService.getService(LogicalExpressionBuilderService.class);
 			LogicalExpressionBuilder defBuilder = expressionBuilderService.getLogicalExpressionBuilder();
 
-			SufficientSet(And(ConceptAssertion(Snomed.BLEEDING_FINDING, defBuilder),
-					SomeRole(Snomed.FINDING_SITE, ConceptAssertion(Snomed.ABDOMINAL_WALL_STRUCTURE, defBuilder))));
+			SufficientSet(And(ConceptAssertion(LookupService.getService(ConceptServiceManagerI.class).get().getConcept(Snomed.BLEEDING_FINDING.getNid()), defBuilder),
+					SomeRole(LookupService.getService(ConceptServiceManagerI.class).get().getConcept(Snomed.FINDING_SITE.getNid()), 
+							ConceptAssertion(LookupService.getService(ConceptServiceManagerI.class).get().getConcept(Snomed.ABDOMINAL_WALL_STRUCTURE.getNid()), defBuilder))));
 
 			LogicalExpression abdominalWallBleedingDef = defBuilder.build();
 
