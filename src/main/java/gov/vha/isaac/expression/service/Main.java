@@ -19,8 +19,7 @@ import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.And;
 import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.ConceptAssertion;
 import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.SomeRole;
 import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.SufficientSet;
-import gov.vha.isaac.logic.LogicGraph;
-import gov.vha.isaac.logic.LogicService;
+import gov.vha.isaac.ochre.api.logic.LogicService;
 import gov.vha.isaac.metadata.coordinates.EditCoordinates;
 import gov.vha.isaac.metadata.coordinates.LogicCoordinates;
 import gov.vha.isaac.metadata.coordinates.StampCoordinates;
@@ -30,7 +29,11 @@ import gov.vha.isaac.ochre.api.IdentifierService;
 import gov.vha.isaac.ochre.api.LookupService;
 import gov.vha.isaac.ochre.api.TaxonomyService;
 import gov.vha.isaac.ochre.api.chronicle.LatestVersion;
+import gov.vha.isaac.ochre.api.component.concept.ConceptService;
 import gov.vha.isaac.ochre.api.constants.Constants;
+import gov.vha.isaac.ochre.api.coordinate.LogicCoordinate;
+import gov.vha.isaac.ochre.api.coordinate.StampCoordinate;
+import gov.vha.isaac.ochre.api.index.SearchResult;
 import gov.vha.isaac.ochre.api.logic.LogicalExpression;
 import gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder;
 import gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilderService;
@@ -38,6 +41,8 @@ import gov.vha.isaac.ochre.api.memory.HeapUseTicker;
 import gov.vha.isaac.ochre.api.progress.ActiveTasksTicker;
 import gov.vha.isaac.ochre.collections.ConceptSequenceSet;
 import gov.vha.isaac.ochre.collections.SequenceSet;
+import gov.vha.isaac.ochre.model.logic.LogicalExpressionOchreImpl;
+import gov.vha.isaac.ochre.util.UuidT3Generator;
 
 import java.util.Collection;
 import java.util.List;
@@ -67,11 +72,8 @@ import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.api.store.Ts;
-import org.ihtsdo.otf.tcc.api.uuid.UuidT3Generator;
-import org.ihtsdo.otf.tcc.model.cc.concept.ConceptVersion;
 import org.ihtsdo.otf.tcc.model.cc.termstore.PersistentStoreI;
 import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
-import org.ihtsdo.otf.tcc.model.index.service.SearchResult;
 
 /**
  *
@@ -99,10 +101,12 @@ public class Main {
 		TaxonomyService taxonomy = LookupService.getService(TaxonomyService.class);
 		TerminologyStoreDI termStore = LookupService.getService(TerminologyStoreDI.class);
 		LogicService logicService = LookupService.getService(LogicService.class);
+                ConceptService conceptService = LookupService.getService(ConceptService.class);
+                LogicCoordinate logicCoordinate = LogicCoordinates.getStandardElProfile();
+                StampCoordinate stampCoordinate = StampCoordinates.getDevelopmentLatest();
 
 		try {
 			TerminologySnapshotDI statedTermSnapshot = termStore.getSnapshot(ViewCoordinates.getDevelopmentStatedLatest());
-			TerminologySnapshotDI inferredTermSnapshot = termStore.getSnapshot(ViewCoordinates.getDevelopmentInferredLatest());
 
 			UUID bleedingSnomedUuid = UuidT3Generator.fromSNOMED(131148009L);
 
@@ -111,9 +115,9 @@ public class Main {
 			System.out.println("Found [1] concept sequence: " + idService.getConceptSequence(bleedingConcept1.getNid()));
 			System.out.println("Found [1]: " + bleedingConcept1 + "\n " + bleedingConcept1.toLongString());
 
-			LogicGraph lg1 = logicService.createLogicGraph((ConceptVersion) statedTermSnapshot.getConceptVersion(bleedingConcept1.getConceptNid()));
+			Optional<LatestVersion<LogicalExpressionOchreImpl>> lg1 = logicService.getLogicalExpression(bleedingConcept1.getNid(), logicCoordinate.getStatedAssemblageSequence(), stampCoordinate);
 			System.out.println("Stated logic graph:  " + lg1);
-			LogicGraph lg2 = logicService.createLogicGraph((ConceptVersion) inferredTermSnapshot.getConceptVersion(bleedingConcept1.getConceptNid()));
+			Optional<LatestVersion<LogicalExpressionOchreImpl>> lg2 = logicService.getLogicalExpression(bleedingConcept1.getNid(), logicCoordinate.getInferredAssemblageSequence(), stampCoordinate);
 			System.out.println("Inferred logic graph:  " + lg2);
 
 			List<SearchResult> bleedingSctidResult = snomedIdLookup.query("131148009", ComponentProperty.STRING_EXTENSION_1, 5);
@@ -137,7 +141,7 @@ public class Main {
 							"; " + bleedingConcept2);
 				}
 			}
-			Optional<LatestVersion<LogicGraph>> bleedingGraph = logicService.getLogicGraph(bleedingConcept1.getNid(),
+			Optional<LatestVersion<LogicalExpressionOchreImpl>> bleedingGraph = logicService.getLogicalExpression(bleedingConcept1.getNid(),
 					LogicCoordinates.getStandardElProfile().getStatedAssemblageSequence(),
 					StampCoordinates.getDevelopmentLatest());
 
@@ -165,7 +169,7 @@ public class Main {
 
 			System.out.println("Created definition:\n\n " + abdominalWallBleedingDef);
 
-			int newSequence = logicService.getConceptSequenceForExpression((LogicGraph) abdominalWallBleedingDef,
+			int newSequence = logicService.getConceptSequenceForExpression((LogicalExpressionOchreImpl) abdominalWallBleedingDef,
 					StampCoordinates.getDevelopmentLatest(),
 					LogicCoordinates.getStandardElProfile(),
 					EditCoordinates.getDefaultUserSolorOverlay());
