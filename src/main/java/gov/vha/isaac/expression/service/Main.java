@@ -32,6 +32,7 @@ import gov.vha.isaac.ochre.api.IdentifierService;
 import gov.vha.isaac.ochre.api.LookupService;
 import gov.vha.isaac.ochre.api.TaxonomyService;
 import gov.vha.isaac.ochre.api.chronicle.LatestVersion;
+import gov.vha.isaac.ochre.api.classifier.ClassifierResults;
 import gov.vha.isaac.ochre.api.component.concept.ConceptServiceManagerI;
 import gov.vha.isaac.ochre.api.constants.Constants;
 import gov.vha.isaac.ochre.api.index.SearchResult;
@@ -44,6 +45,7 @@ import gov.vha.isaac.ochre.collections.ConceptSequenceSet;
 import gov.vha.isaac.ochre.collections.SequenceSet;
 import gov.vha.isaac.ochre.model.logic.LogicExpressionOchreImpl;
 import gov.vha.isaac.ochre.util.UuidT3Generator;
+import gov.vha.isaac.ochre.util.WorkExecutors;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -51,6 +53,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.concurrent.Task;
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
@@ -153,10 +156,14 @@ public class Main {
 			} else {
 				System.out.println("Found concept sequence for graph: " + bleedingGraph.get().value());
 			}
-			logicService.fullClassification(
+			Task<ClassifierResults> task = logicService.fullClassification(
 					StampCoordinates.getDevelopmentLatest(),
 					LogicCoordinates.getStandardElProfile(),
 					EditCoordinates.getDefaultUserSolorOverlay());
+			
+			LookupService.getService(WorkExecutors.class).getExecutor().execute(task);
+			
+			task.get();
 
 			LogicalExpressionBuilderService expressionBuilderService = LookupService.getService(LogicalExpressionBuilderService.class);
 			LogicalExpressionBuilder defBuilder = expressionBuilderService.getLogicalExpressionBuilder();
