@@ -25,6 +25,8 @@ import gov.vha.isaac.metadata.coordinates.LogicCoordinates;
 import gov.vha.isaac.metadata.coordinates.StampCoordinates;
 import gov.vha.isaac.metadata.coordinates.ViewCoordinates;
 import gov.vha.isaac.metadata.source.IsaacMetadataAuxiliaryBinding;
+import gov.vha.isaac.ochre.api.ConceptModel;
+import gov.vha.isaac.ochre.api.ConfigurationService;
 import gov.vha.isaac.ochre.api.IdentifierService;
 import gov.vha.isaac.ochre.api.LookupService;
 import gov.vha.isaac.ochre.api.TaxonomyService;
@@ -51,7 +53,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
 import org.ihtsdo.otf.tcc.api.blueprint.ConceptCB;
 import org.ihtsdo.otf.tcc.api.blueprint.DescriptionCAB;
@@ -72,6 +73,7 @@ import org.ihtsdo.otf.tcc.api.relationship.RelationshipChronicleBI;
 import org.ihtsdo.otf.tcc.api.store.TerminologySnapshotDI;
 import org.ihtsdo.otf.tcc.api.store.TerminologyStoreDI;
 import org.ihtsdo.otf.tcc.api.store.Ts;
+import org.ihtsdo.otf.tcc.model.cc.concept.ConceptVersion;
 import org.ihtsdo.otf.tcc.model.cc.termstore.PersistentStoreI;
 import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
 
@@ -87,6 +89,7 @@ public class Main {
 		}
 		System.out.println("Build directory: " + args[0]);
 		System.setProperty(Constants.DATA_STORE_ROOT_LOCATION_PROPERTY, args[0]);
+		LookupService.getService(ConfigurationService.class).setConceptModel(ConceptModel.OTF_CONCEPT_MODEL);
 		//System.setProperty(Constants.CHRONICLE_COLLECTIONS_ROOT_LOCATION_PROPERTY, args[0] + "/object-chronicles");
 		//System.setProperty(Constants.SEARCH_ROOT_LOCATION_PROPERTY, args[0] + "/search");
 		LookupService.startupIsaac();
@@ -162,8 +165,9 @@ public class Main {
 			LogicalExpressionBuilderService expressionBuilderService = LookupService.getService(LogicalExpressionBuilderService.class);
 			LogicalExpressionBuilder defBuilder = expressionBuilderService.getLogicalExpressionBuilder();
 
-			SufficientSet(And(ConceptAssertion(Snomed.BLEEDING_FINDING, defBuilder),
-					SomeRole(Snomed.FINDING_SITE, ConceptAssertion(Snomed.ABDOMINAL_WALL_STRUCTURE, defBuilder))));
+			SufficientSet(And(ConceptAssertion(LookupService.getService(ConceptService.class).getConcept(Snomed.BLEEDING_FINDING.getNid()), defBuilder),
+					SomeRole(LookupService.getService(ConceptServiceManagerI.class).get().getConcept(Snomed.FINDING_SITE.getNid()), 
+							ConceptAssertion(LookupService.getService(ConceptServiceManagerI.class).get().getConcept(Snomed.ABDOMINAL_WALL_STRUCTURE.getNid()), defBuilder))));
 
 			LogicalExpression abdominalWallBleedingDef = defBuilder.build();
 
