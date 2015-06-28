@@ -157,10 +157,10 @@ public class Main {
 			} else {
 				System.out.println("Found concept sequence for graph: " + bleedingGraph.get().value());
 			}
-			logicService.fullClassification(
+			logicService.startFullClassification(
 					StampCoordinates.getDevelopmentLatest(),
 					LogicCoordinates.getStandardElProfile(),
-					EditCoordinates.getDefaultUserSolorOverlay());
+					EditCoordinates.getDefaultUserSolorOverlay()).get();
 
 			LogicalExpressionBuilderService expressionBuilderService = LookupService.getService(LogicalExpressionBuilderService.class);
 			LogicalExpressionBuilder defBuilder = expressionBuilderService.getLogicalExpressionBuilder();
