@@ -176,13 +176,22 @@ public class Main {
 
             ClassifierResults results2 = classifierService.classify().get();
 
-            SequenceSet kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), ViewCoordinates.getDevelopmentInferredLatest());
-            System.out.println("\nHas " + kindOfBleedingSequences.size() + " kinds.");
+            SequenceSet kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), ViewCoordinates.getDevelopmentStatedLatestActiveOnly());
+            System.out.println("\nHas " + kindOfBleedingSequences.size() + " stated kinds.");
 
             if (kindOfBleedingSequences.contains(newSequence)) {
-                System.out.println("Kind-of set includes new concept " + newSequence);
+                System.out.println("Stated Kind-of set includes new concept " + newSequence);
             } else {
-                System.out.println("Error: kind-of set does not include new concept " + newSequence);
+                System.out.println("Error: Stated kind-of set does not include new concept " + newSequence);
+            }
+
+            kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), ViewCoordinates.getDevelopmentInferredLatestActiveOnly());
+            System.out.println("\nHas " + kindOfBleedingSequences.size() + " inferred kinds.");
+
+            if (kindOfBleedingSequences.contains(newSequence)) {
+                System.out.println("Inferred Kind-of set includes new concept " + newSequence);
+            } else {
+                System.out.println("Error: Inferred kind-of set does not include new concept " + newSequence);
             }
 
             System.out.println("Test rels from root");
