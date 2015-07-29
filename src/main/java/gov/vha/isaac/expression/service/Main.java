@@ -229,7 +229,7 @@ public class Main {
                         = LookupService.getService(LogicalExpressionBuilderService.class);
                 LogicalExpressionBuilder defBuilder = expressionBuilderService.getLogicalExpressionBuilder();
 
-                NecessarySet(And(ConceptAssertion(conceptService.getConcept(Snomed.ORGANISM.getSequence()), defBuilder)));
+                NecessarySet(And(ConceptAssertion(conceptService.getConcept(Snomed.ORGANISM.getConceptSequence()), defBuilder)));
 
                 LogicalExpression def = defBuilder.build();
                 System.out.println("Created definition:\n\n " + def);
