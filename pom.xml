@@ -25,7 +25,7 @@
     <dependencies>
         <dependency>
             <groupId>gov.vha.solor.modules</groupId>
-            <artifactId>snomed-ochre</artifactId>
+            <artifactId>snomed</artifactId>
             <version>${solor.version}</version>
             <type>lucene.zip</type>
             <classifier>all</classifier>
@@ -33,7 +33,7 @@
         </dependency>
         <dependency>
             <groupId>gov.vha.solor.modules</groupId>
-            <artifactId>snomed-ochre</artifactId>
+            <artifactId>snomed</artifactId>
             <version>${solor.version}</version>
             <type>cradle.zip</type>
             <classifier>all</classifier>
