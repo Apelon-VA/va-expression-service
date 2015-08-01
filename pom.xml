@@ -84,7 +84,7 @@
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeArtifactIds>snomed-ochre</includeArtifactIds>
+                            <includeArtifactIds>snomed</includeArtifactIds>
                             <outputDirectory>${project.build.directory}/data</outputDirectory>
                         </configuration>
                     </execution>
@@ -105,7 +105,7 @@
                 <configuration>
                     <mainClass>gov.vha.isaac.expression.service.Main</mainClass>
                     <arguments>
-                        <argument>${project.build.directory}/data/snomed-ochre-${solor.version}-all.data</argument>
+                        <argument>${project.build.directory}/data/snomed-${solor.version}-all.data</argument>
                     </arguments>
                 </configuration>
             </plugin>
