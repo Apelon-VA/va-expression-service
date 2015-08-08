@@ -16,10 +16,10 @@
     </scm>
     
     <properties>
-        <newtons-cradle.version>1.20-SNAPSHOT</newtons-cradle.version>
-        <query.version>2.15-SNAPSHOT</query.version>
-        <logic.version>1.15-SNAPSHOT</logic.version>
-        <solor.version>1.11-SNAPSHOT</solor.version>
+        <newtons-cradle.version>1.21-SNAPSHOT</newtons-cradle.version>
+        <query.version>2.16-SNAPSHOT</query.version>
+        <logic.version>1.16-SNAPSHOT</logic.version>
+        <solor.version>1.12-SNAPSHOT</solor.version>
     </properties>
     
     <dependencies>
