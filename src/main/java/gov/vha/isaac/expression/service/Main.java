@@ -48,6 +48,7 @@ import gov.vha.isaac.ochre.api.constants.Constants;
 import gov.vha.isaac.ochre.api.coordinate.EditCoordinate;
 import gov.vha.isaac.ochre.api.coordinate.LogicCoordinate;
 import gov.vha.isaac.ochre.api.coordinate.StampCoordinate;
+import gov.vha.isaac.ochre.api.index.IndexServiceBI;
 import gov.vha.isaac.ochre.api.index.SearchResult;
 import gov.vha.isaac.ochre.api.logic.LogicalExpression;
 import gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder;
@@ -70,10 +71,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ihtsdo.otf.tcc.api.blueprint.ComponentProperty;
+import org.ihtsdo.otf.query.lucene.indexers.SememeIndexer;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 
-import org.ihtsdo.otf.tcc.model.index.service.IndexerBI;
 
 /**
  *
@@ -104,8 +104,8 @@ public class Main {
         ConceptService conceptService = Get.conceptService();
 
         IdentifierService idService = Get.identifierService();
-        IndexerBI snomedIdLookup = LookupService.get().getService(IndexerBI.class, "snomed id refex indexer");
-        IndexerBI descriptionLookup = LookupService.get().getService(IndexerBI.class, "Description indexer");
+        SememeIndexer snomedIdLookup = LookupService.get().getService(SememeIndexer.class);
+        IndexServiceBI descriptionLookup = LookupService.get().getService(IndexServiceBI.class, "description indexer");
         TaxonomyService taxonomy = LookupService.getService(TaxonomyService.class);
         LogicService logicService = LookupService.getService(LogicService.class);
         ClassifierService classifierService = logicService.getClassifierService(stampCoordinate,
@@ -126,7 +126,7 @@ public class Main {
             Optional<LatestVersion<? extends LogicalExpression>> lg2 = logicService.getLogicalExpression(bleedingConcept1.getNid(), logicCoordinate.getInferredAssemblageSequence(), stampCoordinate);
             System.out.println("Inferred logic graph:  " + lg2);
 
-            List<SearchResult> bleedingSctidResult = snomedIdLookup.query("131148009", ComponentProperty.STRING_EXTENSION_1, 5);
+            List<SearchResult> bleedingSctidResult = snomedIdLookup.query(131148009l, IsaacMetadataAuxiliaryBinding.SNOMED_INTEGER_ID.getConceptSequence(), 5, null);
 
             if (!bleedingSctidResult.isEmpty()) {
                 for (SearchResult result : bleedingSctidResult) {
@@ -137,7 +137,7 @@ public class Main {
                 }
             }
 
-            List<SearchResult> bleedingDescriptionResult = descriptionLookup.query("bleeding", ComponentProperty.DESCRIPTION_TEXT, 5);
+            List<SearchResult> bleedingDescriptionResult = descriptionLookup.query("bleeding", 5);
             if (!bleedingDescriptionResult.isEmpty()) {
                 for (SearchResult result : bleedingDescriptionResult) {
                     int bleedingDexcriptionNid = result.nid;
