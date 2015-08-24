@@ -21,7 +21,7 @@ import gov.vha.isaac.ochre.api.logic.LogicService;
 import gov.vha.isaac.metadata.coordinates.EditCoordinates;
 import gov.vha.isaac.metadata.coordinates.LogicCoordinates;
 import gov.vha.isaac.metadata.coordinates.StampCoordinates;
-import gov.vha.isaac.metadata.coordinates.ViewCoordinates;
+import gov.vha.isaac.metadata.coordinates.TaxonomyCoordinates;
 import gov.vha.isaac.metadata.source.IsaacMetadataAuxiliaryBinding;
 import gov.vha.isaac.ochre.api.ConceptModel;
 import gov.vha.isaac.ochre.api.ConfigurationService;
@@ -63,7 +63,6 @@ import gov.vha.isaac.ochre.collections.SequenceSet;
 import gov.vha.isaac.ochre.model.logic.LogicalExpressionOchreImpl;
 import gov.vha.isaac.ochre.util.UuidT3Generator;
 import java.util.ArrayList;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -176,7 +175,8 @@ public class Main {
 
             ClassifierResults results2 = classifierService.classify().get();
 
-            SequenceSet kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), ViewCoordinates.getDevelopmentStatedLatestActiveOnly());
+            SequenceSet kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), TaxonomyCoordinates
+                    .getStatedTaxonomyCoordinate(StampCoordinates.getDevelopmentLatestActiveOnly(), Get.configurationService().getDefaultLanguageCoordinate()));
             System.out.println("\nHas " + kindOfBleedingSequences.size() + " stated kinds.");
 
             if (kindOfBleedingSequences.contains(newSequence)) {
@@ -185,7 +185,8 @@ public class Main {
                 System.out.println("Error: Stated kind-of set does not include new concept " + newSequence);
             }
 
-            kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), ViewCoordinates.getDevelopmentInferredLatestActiveOnly());
+            kindOfBleedingSequences = taxonomy.getKindOfSequenceSet(bleedingConcept1.getNid(), TaxonomyCoordinates
+                    .getInferredTaxonomyCoordinate(StampCoordinates.getDevelopmentLatestActiveOnly(), Get.configurationService().getDefaultLanguageCoordinate()));
             System.out.println("\nHas " + kindOfBleedingSequences.size() + " inferred kinds.");
 
             if (kindOfBleedingSequences.contains(newSequence)) {
