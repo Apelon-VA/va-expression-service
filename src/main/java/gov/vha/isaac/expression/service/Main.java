@@ -15,9 +15,12 @@
  */
 package gov.vha.isaac.expression.service;
 
+import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.And;
+import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.ConceptAssertion;
+import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.NecessarySet;
 import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.SomeRole;
 import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.SufficientSet;
-import gov.vha.isaac.ochre.api.logic.LogicService;
+import gov.va.isaac.util.OchreUtility;
 import gov.vha.isaac.metadata.coordinates.EditCoordinates;
 import gov.vha.isaac.metadata.coordinates.LogicCoordinates;
 import gov.vha.isaac.metadata.coordinates.StampCoordinates;
@@ -50,11 +53,9 @@ import gov.vha.isaac.ochre.api.coordinate.LogicCoordinate;
 import gov.vha.isaac.ochre.api.coordinate.StampCoordinate;
 import gov.vha.isaac.ochre.api.index.IndexServiceBI;
 import gov.vha.isaac.ochre.api.index.SearchResult;
+import gov.vha.isaac.ochre.api.logic.LogicService;
 import gov.vha.isaac.ochre.api.logic.LogicalExpression;
 import gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder;
-import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.And;
-import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.ConceptAssertion;
-import static gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilder.NecessarySet;
 import gov.vha.isaac.ochre.api.logic.LogicalExpressionBuilderService;
 import gov.vha.isaac.ochre.api.memory.HeapUseTicker;
 import gov.vha.isaac.ochre.api.progress.ActiveTasksTicker;
@@ -62,6 +63,7 @@ import gov.vha.isaac.ochre.api.relationship.RelationshipVersionAdaptor;
 import gov.vha.isaac.ochre.collections.SequenceSet;
 import gov.vha.isaac.ochre.model.logic.LogicalExpressionOchreImpl;
 import gov.vha.isaac.ochre.util.UuidT3Generator;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -70,7 +72,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.ihtsdo.otf.query.lucene.indexers.SememeIndexer;
 import org.ihtsdo.otf.tcc.api.metadata.binding.Snomed;
 
 
@@ -82,7 +83,8 @@ public class Main {
 
     public static void main(String[] args) {
         if (args == null || args.length == 0) {
-            args = new String[]{"target"};
+            File temp = new File("target/data/");
+            args = new String[]{temp.listFiles()[0].getAbsolutePath()};
         }
         System.out.println("Build directory: " + args[0]);
         System.setProperty(Constants.DATA_STORE_ROOT_LOCATION_PROPERTY, args[0]);
@@ -103,7 +105,6 @@ public class Main {
         ConceptService conceptService = Get.conceptService();
 
         IdentifierService idService = Get.identifierService();
-        SememeIndexer snomedIdLookup = LookupService.get().getService(SememeIndexer.class);
         IndexServiceBI descriptionLookup = LookupService.get().getService(IndexServiceBI.class, "description indexer");
         TaxonomyService taxonomy = LookupService.getService(TaxonomyService.class);
         LogicService logicService = LookupService.getService(LogicService.class);
@@ -125,15 +126,16 @@ public class Main {
             Optional<LatestVersion<? extends LogicalExpression>> lg2 = logicService.getLogicalExpression(bleedingConcept1.getNid(), logicCoordinate.getInferredAssemblageSequence(), stampCoordinate);
             System.out.println("Inferred logic graph:  " + lg2);
 
-            List<SearchResult> bleedingSctidResult = snomedIdLookup.query(131148009l, IsaacMetadataAuxiliaryBinding.SNOMED_INTEGER_ID.getConceptSequence(), 5, null);
-
-            if (!bleedingSctidResult.isEmpty()) {
-                for (SearchResult result : bleedingSctidResult) {
-                    int bleedingConceptNid = result.nid;
-                    System.out.println("\nFound [2] nid: " + bleedingConceptNid);
-                    ConceptChronology bleedingConcept2 = conceptService.getConcept(bleedingConceptNid);
-                    System.out.println("Found [2]: " + bleedingConcept2);
-                }
+            Optional<Integer> nid = OchreUtility.getNidForSCTID(131148009L);
+ 
+            if (nid.isPresent()) {
+                System.out.println("\nFound [2] nid via index: " + nid.get());
+                ConceptChronology bleedingConcept2 = conceptService.getConcept(nid.get());
+                System.out.println("Found [2]: " + bleedingConcept2);
+            }
+            else
+            {
+                System.err.println("Failed to find via index!");
             }
 
             List<SearchResult> bleedingDescriptionResult = descriptionLookup.query("bleeding", 5);
