@@ -4,7 +4,7 @@
     <parent>
         <groupId>gov.vha.isaac</groupId>
         <artifactId>isaac-parent</artifactId>
-        <version>1.10-SNAPSHOT</version>
+        <version>1.10</version>
     </parent>
 
     <artifactId>expression-service</artifactId>
@@ -16,11 +16,11 @@
     </scm>
     
     <properties>
-        <newtons-cradle.version>1.22-SNAPSHOT</newtons-cradle.version>
-        <query.version>2.17-SNAPSHOT</query.version>
-        <logic.version>1.17-SNAPSHOT</logic.version>
-        <solor.version>1.13-SNAPSHOT</solor.version>
-        <isaac-gui.version>23.5-SNAPSHOT</isaac-gui.version>
+        <newtons-cradle.version>1.22</newtons-cradle.version>
+        <query.version>2.17</query.version>
+        <logic.version>1.17</logic.version>
+        <solor.version>1.13</solor.version>
+        <isaac-gui.version>23.5</isaac-gui.version>
     </properties>
     
     <dependencies>
